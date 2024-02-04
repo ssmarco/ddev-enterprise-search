@@ -1,0 +1,18 @@
+#ddev-generated
+# enterprise-search config
+
+elasticsearch.username: elastic
+elasticsearch.password: elastic
+elasticsearch.host: https://elasticsearch:9200
+elasticsearch.ssl.enabled: true
+kibana.host: http://kibana:5601
+kibana.external_url: http://kibana:5601
+skip_read_only_check: true
+allow_es_settings_modification: true
+ent_search.external_url: http://enterprisesearch:3002
+ent_search.listen_host: 0.0.0.0
+ent_search.listen_port: 3002
+
+secret_management.encryption_keys:
+  [thequickbrownfoxjumpsoverthelazydog1cozylummoxgivessmartsquidwho]
+elasticsearch.ssl.certificate_authority: /usr/share/enterprise-search/config/certs/ca/ca.crt

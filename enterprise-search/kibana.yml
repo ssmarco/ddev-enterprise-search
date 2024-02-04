@@ -1,0 +1,31 @@
+#ddev-generated
+# kibana config
+
+### encryption key generate by ./bin/kibana-encryption-key generate command
+xpack.encryptedSavedObjects.encryptionKey: a90aed72d393a50e22d622c25d7a5079
+xpack.reporting.encryptionKey: 8af30ceea35f064a776b7458176d44d8
+xpack.security.encryptionKey: 599ac94fc22d39512af7b6fc52e5fd7c
+xpack.reporting.roles.enabled: false
+monitoring.ui.container.elasticsearch.enabled: true
+telemetry.optIn: false
+
+server.host: "0.0.0.0"
+server.port: 5601
+
+elasticsearch.username: kibana_system
+elasticsearch.password: elastic
+
+elasticsearch.hosts: ["https://elasticsearch:9200"]
+enterpriseSearch.host: "http://enterprisesearch:3002"
+server.publicBaseUrl: "https://elasticsearch:9200"
+
+# Enables you to specify a path to the PEM file for the certificate
+# authority for your Elasticsearch instance.
+elasticsearch.ssl.certificateAuthorities:
+  ["/usr/share/kibana/config/certs/ca/ca.crt"]
+enterpriseSearch.ssl.certificateAuthorities:
+  ["/usr/share/kibana/config/certs/ca/ca.crt"]
+
+# To disregard the validity of SSL certificates, change this setting's value to 'none'.
+elasticsearch.ssl.verificationMode: none
+enterpriseSearch.ssl.verificationMode: none

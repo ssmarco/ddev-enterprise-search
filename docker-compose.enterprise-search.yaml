@@ -1,0 +1,180 @@
+#ddev-generated
+
+services:
+    # mount certificate folder to website
+    web:
+        volumes:
+            - elastic-certs:/usr/share/elasticsearch/config/certs
+
+    elastic-config:
+        container_name: ddev-${DDEV_SITENAME}-elastic-config
+        hostname: ${DDEV_SITENAME}-elastic-config
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+        volumes:
+            - ".:/mnt/ddev_config"
+            - elastic-certs:/usr/share/elasticsearch/config/certs
+        environment:
+            - ELASTIC_PASSWORD=elastic
+            - KIBANA_PASSWORD=elastic
+        labels:
+            com.ddev.site-name: ${DDEV_SITENAME}
+            com.ddev.approot: $DDEV_APPROOT
+        user: "0"
+        restart: "no"
+        command: >
+            bash -c '
+                if [ ! -f /usr/share/elasticsearch/config/certs/ca.zip ]; then
+                    echo "Creating CA";
+                    bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+                    unzip config/certs/ca.zip -d config/certs;
+                fi;
+
+                if [ ! -f /usr/share/elasticsearch/config/certs/certs.zip ]; then
+                    echo "Creating certs";
+                    echo -ne \
+                      "instances:\n"\
+                      "  - name: elasticsearch\n"\
+                      "    dns:\n"\
+                      "      - elasticsearch\n"\
+                      "      - localhost\n"\
+                      "    ip:\n"\
+                      "      - 127.0.0.1\n"\
+                    > config/certs/instances.yml;
+
+                    bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+                    unzip config/certs/certs.zip -d config/certs;
+                fi;
+
+                echo "Setting file permissions"
+                chown -R root:root config/certs;
+                find . -type d -exec chmod 755 \{\} \;;
+                find . -type f -exec chmod 644 \{\} \;;
+
+                echo "Listing certificates"
+                ls -la config/certs/ca/ca.crt
+                ls -la config/certs/elasticsearch/elasticsearch.crt
+
+                echo "Waiting for Elasticsearch availability";
+                until curl -s --cacert config/certs/ca/ca.crt -u elastic:elastic https://elasticsearch:9200; do sleep 5 && date; done;
+
+                echo "Setting kibana_system password";
+                until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:elastic -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"elastic\"}" | grep -q "^{}"; do sleep 5 && date ; done;
+
+                echo "Testing kibana_system user";
+                until curl -s --cacert config/certs/ca/ca.crt -u kibana_system:elastic https://elasticsearch:9200; do sleep 5 && date; done;
+
+                echo "Exit in 5 minutes"
+                for i in {1..5}; do date && sleep 60; done
+
+                echo "All done!";
+              '
+
+    elasticsearch:
+        depends_on:
+            - elastic-config
+        # Name of container using standard ddev convention
+        container_name: ddev-${DDEV_SITENAME}-elasticsearch
+        hostname: ${DDEV_SITENAME}-elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+        volumes:
+            - ".:/mnt/ddev_config"
+            - ./enterprise-search/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+            - elastic-certs:/usr/share/elasticsearch/config/certs
+            - elastic-data:/usr/share/elasticsearch/data
+        # These labels ensure this service is discoverable by ddev.
+        labels:
+            com.ddev.site-name: ${DDEV_SITENAME}
+            com.ddev.approot: $DDEV_APPROOT
+        environment:
+            - node.name=elasticsearch
+            - cluster.name=elastic-cluster
+            - cluster.initial_master_nodes=elasticsearch
+            - ELASTIC_PASSWORD=elastic
+        restart: "no"
+        mem_limit: 1073741824
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+
+    kibana:
+        depends_on:
+            - elasticsearch
+            - elastic-config
+        # Name of container using standard ddev convention
+        container_name: ddev-${DDEV_SITENAME}-kibana
+        hostname: ${DDEV_SITENAME}-kibana
+        image: docker.elastic.co/kibana/kibana:8.12.0
+        volumes:
+            - ".:/mnt/ddev_config"
+            - ./enterprise-search/kibana.yml:/usr/share/kibana/config/kibana.yml
+            - elastic-certs:/usr/share/kibana/config/certs
+            - elastic-kibana:/usr/share/kibana/data
+        # These labels ensure this service is discoverable by ddev.
+        labels:
+            com.ddev.site-name: ${DDEV_SITENAME}
+            com.ddev.approot: $DDEV_APPROOT
+        expose:
+            - "5601"
+        environment:
+            - VIRTUAL_HOST=$DDEV_HOSTNAME
+            - SERVERNAME=kibana
+            - KIBANA_PASSWORD=elastic
+            - HTTP_EXPOSE=5601:5601
+            - HTTPS_EXPOSE=5602:5601
+        mem_limit: 1073741824
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -s -I http://kibana:5601 | grep -q 'HTTP/1.1 302 Found'",
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 120
+
+    enterprisesearch:
+        depends_on:
+            - kibana
+            - elasticsearch
+        container_name: ddev-${DDEV_SITENAME}-enterprisesearch
+        hostname: ${DDEV_SITENAME}-enterprisesearch
+        image: docker.elastic.co/enterprise-search/enterprise-search:8.12.0
+        volumes:
+            - ".:/mnt/ddev_config"
+            - ./enterprise-search/config.yml:/usr/share/enterprise-search/config/enterprise-search.yml
+            - elastic-certs:/usr/share/enterprise-search/config/certs
+            - enterprise-data:/usr/share/enterprise-search/config
+        # These labels ensure this service is discoverable by ddev.
+        labels:
+            com.ddev.site-name: ${DDEV_SITENAME}
+            com.ddev.approot: $DDEV_APPROOT
+        environment:
+            - VIRTUAL_HOST=$DDEV_HOSTNAME
+            - SERVERNAME=enterprisesearch
+            - ELASTIC_PASSWORD=elastic
+            - KIBANA_PASSWORD=elastic
+            - secret_management.encryption_keys=[thequickbrownfoxjumpsoverthelazydog1cozylummoxgivessmartsquidwho]
+            - allow_es_settings_modification=true
+            - elasticsearch.host=https://elasticsearch:9200
+            - elasticsearch.username=elastic
+            - elasticsearch.password=elastic
+            - elasticsearch.ssl.enabled=true
+            - elasticsearch.ssl.certificate_authority=/usr/share/enterprise-search/config/certs/ca/ca.crt
+            - kibana.external_url=http://kibana:5601
+        mem_limit: 1073741824
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -s -I http://enterprisesearch:3002 | grep -q 'HTTP/1.1 302 Found'",
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 120
+
+volumes:
+    elastic-certs:
+    elastic-data:
+    elastic-kibana:
+    enterprise-data:

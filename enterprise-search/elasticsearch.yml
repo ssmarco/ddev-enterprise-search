@@ -1,0 +1,35 @@
+#ddev-generated
+# elastics-search config
+
+# This file contains the configuration settings for Elasticsearch 8.
+# For more information, see https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/important-settings.html#cluster-name
+cluster.name: "docker-cluster"
+node.name: node-1
+node.attr.rack: r1
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/important-settings.html#network.host
+network.host: 0.0.0.0
+http.host: 0.0.0.0
+transport.host: 0.0.0.0
+http.port: 9200
+# Disable security features
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/security-settings.html#general-security-settings
+
+xpack.security.enabled: true
+xpack.security.enrollment.enabled: true
+xpack.security.authc.api_key.enabled: true
+xpack.security.autoconfiguration.enabled: true
+bootstrap.memory_lock: true
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: certs/elasticsearch/elasticsearch.key
+xpack.security.http.ssl.certificate: certs/elasticsearch/elasticsearch.crt
+xpack.security.http.ssl.certificate_authorities: certs/ca/ca.crt
+xpack.security.http.ssl.verification_mode: certificate
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.key: certs/elasticsearch/elasticsearch.key
+xpack.security.transport.ssl.certificate: certs/elasticsearch/elasticsearch.crt
+xpack.security.transport.ssl.certificate_authorities: certs/ca/ca.crt
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.license.self_generated.type: basic
