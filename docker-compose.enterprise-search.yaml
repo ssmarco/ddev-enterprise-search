@@ -86,11 +86,7 @@ services:
             com.ddev.site-name: ${DDEV_SITENAME}
             com.ddev.approot: $DDEV_APPROOT
         environment:
-            - node.name=elasticsearch
-            - cluster.name=elastic-cluster
-            - cluster.initial_master_nodes=elasticsearch
             - ELASTIC_PASSWORD=elastic
-        restart: "no"
         mem_limit: 1073741824
         ulimits:
             memlock:
