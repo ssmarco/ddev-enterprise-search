@@ -12,8 +12,8 @@ ddev-enterprise-search is the un-official implementation of Elastic Enterprise S
 
 Enterprise Search is an additional Elastic service that adds APIs and UIs to those already provided by Elasticsearch and Kibana.
 
-Currently sitting at version 8.12.0, part of the implementation as a service for DDEV includes Elastic Search and Kibana containers.
-This means that to use this service, existing Elastic and Kibana servies needs to be uninstalled in your project.
+Currently sitting at version 8.12.0, part of the implementation as a service for DDEV includes Kibana container.
+This means that to use this service, existing Kibana service needs to be uninstalled in your project and should install the supported Elastic Search from DDEV.
 
 From your DDEV project, install this by running `ddev get ssmarco/ddev-enterprise-search` then `ddev restart`.
 This will take up to 30 minutes or so due when downloading the required docker containers (Elastic Search, Kibana and Enterprise Search).
@@ -26,6 +26,7 @@ This will take up to 30 minutes or so due when downloading the required docker c
 1. In the DDEV project directory launch the command:
 
 ```
+ddev get ddev/ddev-elasticsearch
 ddev get ssmarco/ddev-enterprise-search
 ```
 

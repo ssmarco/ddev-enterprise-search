@@ -23,47 +23,13 @@ services:
         restart: "no"
         command: >
             bash -c '
-                # if [ ! -f /usr/share/elasticsearch/config/certs/ca.zip ]; then
-                #     echo "Creating CA";
-                #     bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
-                #     unzip config/certs/ca.zip -d config/certs;
-                # fi;
-
-                # if [ ! -f /usr/share/elasticsearch/config/certs/certs.zip ]; then
-                #     echo "Creating certs";
-                #     echo -ne \
-                #       "instances:\n"\
-                #       "  - name: elasticsearch\n"\
-                #       "    dns:\n"\
-                #       "      - elasticsearch\n"\
-                #       "      - localhost\n"\
-                #       "    ip:\n"\
-                #       "      - 127.0.0.1\n"\
-                #     > config/certs/instances.yml;
-                #
-                #     bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
-                #     unzip config/certs/certs.zip -d config/certs;
-                # fi;
-
-                echo "Setting file permissions"
-                #chown -R root:root config/certs;
-                #find . -type d -exec chmod 755 \{\} \;;
-                #find . -type f -exec chmod 644 \{\} \;;
-
-                echo "Listing certificates"
-                #ls -la config/certs/ca/ca.crt
-                #ls -la config/certs/elasticsearch/elasticsearch.crt
-
                 echo "Waiting for Elasticsearch availability";
-                #until curl -s --cacert config/certs/ca/ca.crt -u elastic:elastic https://elasticsearch:9200; do sleep 5 && date; done;
                 until curl -s -u elastic:elastic http://elasticsearch:9200; do sleep 5 && date; done;
 
                 echo "Setting kibana_system password";
-                #until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:elastic -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"elastic\"}" | grep -q "^{}"; do sleep 5 && date ; done;
                 until curl -s -X POST -u elastic:elastic -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"elastic\"}" | grep -q "^{}"; do sleep 5 && date ; done;
 
                 echo "Testing kibana_system user";
-                #until curl -s --cacert config/certs/ca/ca.crt -u kibana_system:elastic https://elasticsearch:9200; do sleep 5 && date; done;
                 until curl -s -u kibana_system:elastic http://elasticsearch:9200; do sleep 5 && date; done;
 
                 echo "Exit in 5 minutes"
@@ -75,33 +41,23 @@ services:
     elasticsearch:
         depends_on:
             - elastic-config
-        # Name of container using standard ddev convention
-        container_name: ddev-${DDEV_SITENAME}-elasticsearch
-        hostname: ${DDEV_SITENAME}-elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+        image: elasticsearch:8.12.0
         volumes:
-            - ".:/mnt/ddev_config"
             - ./enterprise-search/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
             - elastic-certs:/usr/share/elasticsearch/config/certs
-            - elastic-data:/usr/share/elasticsearch/data
-        # These labels ensure this service is discoverable by ddev.
-        labels:
-            com.ddev.site-name: ${DDEV_SITENAME}
-            com.ddev.approot: $DDEV_APPROOT
+            - elasticsearch:/usr/share/elasticsearch/data
         environment:
-            - ELASTIC_PASSWORD=elastic
+            - cluster.name=docker-cluster
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
             - VIRTUAL_HOST=$DDEV_HOSTNAME
             - HTTP_EXPOSE=9200:9200
             - HTTPS_EXPOSE=9201:9200
-            - cluster.name=docker-cluster
-            - discovery.type=single-node
-            - bootstrap.memory_lock=true
-        mem_limit: 1073741824
-        ulimits:
-            memlock:
-                soft: -1
-                hard: -1
+            - ELASTIC_PASSWORD=elastic
+            - KIBANA_PASSWORD=elastic
+        healthcheck:
+            disable: true
 
     kibana:
         depends_on:
@@ -141,7 +97,6 @@ services:
 
     enterprisesearch:
         depends_on:
-            #- kibana
             - elasticsearch
         container_name: ddev-${DDEV_SITENAME}-enterprisesearch
         hostname: ${DDEV_SITENAME}-enterprisesearch
@@ -160,14 +115,6 @@ services:
             - SERVERNAME=enterprisesearch
             - ELASTIC_PASSWORD=elastic
             - KIBANA_PASSWORD=elastic
-            - secret_management.encryption_keys=[thequickbrownfoxjumpsoverthelazydog1cozylummoxgivessmartsquidwho]
-            - allow_es_settings_modification=true
-            - elasticsearch.host=https://elasticsearch:9200
-            - elasticsearch.username=elastic
-            - elasticsearch.password=elastic
-            - elasticsearch.ssl.enabled=true
-            - elasticsearch.ssl.certificate_authority=/usr/share/enterprise-search/config/certs/ca/ca.crt
-            - kibana.external_url=http://kibana:5601
         mem_limit: 1073741824
         healthcheck:
             test:

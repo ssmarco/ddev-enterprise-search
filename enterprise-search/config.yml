@@ -15,4 +15,3 @@ ent_search.listen_port: 3002
 
 secret_management.encryption_keys:
   [thequickbrownfoxjumpsoverthelazydog1cozylummoxgivessmartsquidwho]
-# elasticsearch.ssl.certificate_authority: /usr/share/enterprise-search/config/certs/ca/ca.crt
