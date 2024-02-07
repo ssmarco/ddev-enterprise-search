@@ -15,16 +15,14 @@ server.port: 5601
 elasticsearch.username: kibana_system
 elasticsearch.password: elastic
 
-elasticsearch.hosts: ["https://elasticsearch:9200"]
+elasticsearch.hosts: ["http://elasticsearch:9200"]
 enterpriseSearch.host: "http://enterprisesearch:3002"
-server.publicBaseUrl: "https://elasticsearch:9200"
+server.publicBaseUrl: "http://elasticsearch:9200"
 
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-elasticsearch.ssl.certificateAuthorities:
-  ["/usr/share/kibana/config/certs/ca/ca.crt"]
-enterpriseSearch.ssl.certificateAuthorities:
-  ["/usr/share/kibana/config/certs/ca/ca.crt"]
+#elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca/ca.crt"]
+#enterpriseSearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca/ca.crt"]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 elasticsearch.ssl.verificationMode: none

@@ -3,8 +3,8 @@
 
 elasticsearch.username: elastic
 elasticsearch.password: elastic
-elasticsearch.host: https://elasticsearch:9200
-elasticsearch.ssl.enabled: true
+elasticsearch.host: http://elasticsearch:9200
+elasticsearch.ssl.enabled: false
 kibana.host: http://kibana:5601
 kibana.external_url: http://kibana:5601
 skip_read_only_check: true
@@ -15,4 +15,4 @@ ent_search.listen_port: 3002
 
 secret_management.encryption_keys:
   [thequickbrownfoxjumpsoverthelazydog1cozylummoxgivessmartsquidwho]
-elasticsearch.ssl.certificate_authority: /usr/share/enterprise-search/config/certs/ca/ca.crt
+# elasticsearch.ssl.certificate_authority: /usr/share/enterprise-search/config/certs/ca/ca.crt
