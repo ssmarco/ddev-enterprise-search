@@ -42,7 +42,9 @@ ddev restart
 ddev describe
 ```
 
-4. Login with the username, `elastic` and password, `elastic`
+4. Login with the username, `elastic` and password, `elastic`.
+
+5. The API credentials can be directly taken by following this URL pattern, https://your-project-name.ddev.site:5602/app/enterprise_search/app_search/credentials
 
 ## Configuring your framework
 
@@ -58,6 +60,13 @@ ENTERPRISE_SEARCH_ENDPOINT="http://enterprisesearch:3002"
 ```
 
 2. The Enterprise Search endpoint is `http://enterprisesearch:3002`
+
+3. The following modules are tested to work out of the box in your composer.json file:
+
+```
+"silverstripe/silverstripe-search-service": "^3.0",
+"silverstripe/silverstripe-search-service-elastic": "^1.0@beta",
+```
 
 ## Troubleshooting
 
@@ -101,6 +110,8 @@ ddev-your-project-name_enterprise-data
 4. Check the status of the project by `ddev status`
 
 5. Check the logs:
+
+The `elastic-config` container does the necessary prerequisites to glue together the other containers. It checks connection to Elastic Search and resets `kybana_system` password.
 
 ```
 ddev logs -s elastic-config
