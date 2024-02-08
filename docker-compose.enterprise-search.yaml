@@ -98,6 +98,7 @@ services:
     enterprisesearch:
         depends_on:
             - elasticsearch
+            - kibana
         container_name: ddev-${DDEV_SITENAME}-enterprisesearch
         hostname: ${DDEV_SITENAME}-enterprisesearch
         image: docker.elastic.co/enterprise-search/enterprise-search:8.12.0
@@ -115,7 +116,7 @@ services:
             - SERVERNAME=enterprisesearch
             - ELASTIC_PASSWORD=elastic
             - KIBANA_PASSWORD=elastic
-        mem_limit: 1073741824
+        mem_limit: 2147483648
         healthcheck:
             test:
                 [

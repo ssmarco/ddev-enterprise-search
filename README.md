@@ -111,11 +111,25 @@ ddev logs -s enterprisesearch
 
 6. Check job health:
 
+You might need to install `jq` for better reading.
+
 ```
 docker inspect --format "{{json .State.Health }}" ddev-your-project-name-enterprisesearch | jq
 docker inspect --format "{{json .State.Health }}" ddev-your-project-name-kibana | jq
 docker inspect --format "{{json .State.Health }}" ddev-your-project-name-elasticsearch | jq
 ```
+
+7. Check memory consumptions
+
+```
+docker stats
+```
+
+## Warning
+
+This is for local development purposes only. Testing large amount of data depends on the host computer's resources.
+
+If you have a good amount of CPU's and memory, you can increase the value of `mem_limit` for each container or remove this attribute to assign more resources as needed.
 
 ## Contribute
 
