@@ -68,6 +68,47 @@ ENTERPRISE_SEARCH_ENDPOINT="http://enterprisesearch:3002"
 "silverstripe/silverstripe-search-service-elastic": "^1.0@beta",
 ```
 
+## Recommendations
+
+This is for local development purposes only. Testing large amount of data depends on the host computer's resources.
+If you have a good amount of CPU's and memory, you can increase the value of `mem_limit` for each container or remove this attribute to assign more resources as needed.
+
+We have found that 4 to 6GB allocated to the docker provider seems to provide the best experience.
+
+The default mem_limit (2GB) is usually enough for smaller indexes, under or around 1,000 documents. However, you may might encounter memory exhausted errors after a few hours or running elastic search. 
+This will happen when the elastic dashboard starts returning `502` errors. You can check the logs or the `ddev describe` to confirm.
+
+If this happens you can either restart (`ddev restart`), or increase the `mem_limit` to a higher allocation. 
+
+For more than 5k documents we recommend allocating your docker provider with 4 to 6 GB of memory, and increasing the default `mem_limit` from 2GB to 4GB.
+
+### How to configure your docker provider:
+**Docker desktop**
+1. Open Docker Desktop app
+2. Click Preferences
+3. Click 'Advanced' tab, you should then be able to configure the memory / cpu limit 
+
+**Colima**
+You can change the memory and cpu by stopping and starting colima with preferred options
+```
+colima stop
+colima start --cpu 4 --memory 6
+```
+
+### Increasing the mem_limit
+In the  `.ddev/docker-compose.enterprise-search.yaml` you can increase the `mem_limit`.
+``` yaml
+services:
+    web:
+        # elastic / config / kibana
+        enterprisesearch:
+            mem_limit: 6g
+```
+
+This will require you to restart your ddev box `ddev restart`.
+
+
+
 ## Troubleshooting
 
 1. Make sure all required containers are downloaded
@@ -136,11 +177,6 @@ docker inspect --format "{{json .State.Health }}" ddev-your-project-name-elastic
 docker stats
 ```
 
-## Warning
-
-This is for local development purposes only. Testing large amount of data depends on the host computer's resources.
-
-If you have a good amount of CPU's and memory, you can increase the value of `mem_limit` for each container or remove this attribute to assign more resources as needed.
 
 ## Contribute
 
